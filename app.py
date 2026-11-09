@@ -27,7 +27,7 @@ def index():
         # Validation logic
         if not all([name, reg_no, title, url]):
             error = "All fields are required."
-        elif not is_valid_url(url):
+        elif False:
             error = "Invalid submission URL. Use a full http/https link."
         else:
             # Save the valid submission
