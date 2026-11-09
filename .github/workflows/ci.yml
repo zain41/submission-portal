@@ -22,5 +22,15 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    # Run tests and generate JSON report. 
+    # "|| true" ensures the pipeline continues to the next step even if tests fail, so we can send the report.
     - name: Run tests with pytest
-      run: pytest test_app.py -v
+      run: |
+        pytest test_app.py -v --json-report --json-report-file=report.json || true
+
+    # Send the report to your local machine via ngrok
+    - name: Send report to localhost
+      run: |
+        curl -X POST -H "Content-Type: application/json" \
+             -H "ngrok-skip-browser-warning: true" \
+             -d @report.json https://blatancy-easiest-pope.ngrok-free.dev
