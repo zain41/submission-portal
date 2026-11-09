@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Assignment Submission Portal</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 760px; margin: 40px auto; padding: 0 16px; }
+        label { display: block; margin-top: 12px; font-weight: bold; }
+        input { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; }
+        button { margin-top: 16px; padding: 10px 20px; cursor: pointer; }
+        .error { color: #b00020; background: #fde8e8; padding: 10px; border-radius: 4px; margin-top: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 24px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; font-size: 14px; }
+        th { background: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Assignment Submission Portal</h1>
+
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+    <form method="POST" action="/">
+        <label for="name">Student Name</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="reg_no">Registration Number</label>
+        <input type="text" id="reg_no" name="reg_no" required>
+
+        <label for="title">Assignment Title</label>
+        <input type="text" id="title" name="title" required>
+
+        <label for="url">Submission URL</label>
+        <input type="text" id="url" name="url" placeholder="https://..." required>
+
+        <button type="submit">Submit Assignment</button>
+    </form>
+
+    <h2>Saved Submissions ({{ submissions|length }})</h2>
+    {% if submissions %}
+    <table>
+        <thead><tr><th>Name</th><th>Reg. No.</th><th>Title</th><th>URL</th></tr></thead>
+        <tbody>
+        {% for s in submissions %}
+            <tr>
+                <td>{{ s.name }}</td>
+                <td>{{ s.reg_no }}</td>
+                <td>{{ s.title }}</td>
+                <td><a href="{{ s.url }}" target="_blank">{{ s.url }}</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>No submissions yet.</p>
+    {% endif %}
+</body>
+</html>
