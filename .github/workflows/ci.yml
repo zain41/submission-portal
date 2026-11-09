@@ -1,4 +1,4 @@
-name: Automated Tests
+name: Automated Tests & Deployment
 
 on:
   push:
@@ -22,13 +22,35 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    # Run tests and generate JSON report. "|| true" allows the pipeline to continue if tests fail.
     - name: Run tests with pytest
       run: |
-        pytest test_app.py -v --json-report --json-report-file=report.json || true
+        pytest test_app.py -v --json-report --json-report-file=report.json
 
-    # Create a clean, formatted report and send it via curl
     - name: Format and send report
+      if: always() # Ensures the report sends even if tests fail
       run: |
         python -c "import json, os, datetime; d = json.load(open('report.json')); d['metadata'] = {'repository': os.environ.get('GITHUB_REPOSITORY'), 'branch': os.environ.get('GITHUB_REF_NAME'), 'commit_sha': os.environ.get('GITHUB_SHA'), 'run_id': os.environ.get('GITHUB_RUN_ID'), 'timestamp': datetime.datetime.utcnow().isoformat() + 'Z'}; s = d.get('summary', {}); d['test_counts'] = {'total': s.get('total', 0), 'passed': s.get('passed', 0), 'failed': s.get('failed', 0), 'overall_status': 'PASS' if s.get('failed', 0) == 0 else 'FAIL'}; json.dump(d, open('final_report.json', 'w'), indent=2)"
         curl -X POST -H "Content-Type: application/json" -H "ngrok-skip-browser-warning: true" -d @final_report.json https://blatancy-easiest-pope.ngrok-free.dev
+
+  # This job ONLY runs if the 'test' job passes successfully
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './docs'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

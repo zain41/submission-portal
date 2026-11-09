@@ -1,57 +1,390 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Assignment Submission Portal</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 760px; margin: 40px auto; padding: 0 16px; }
-        label { display: block; margin-top: 12px; font-weight: bold; }
-        input { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; }
-        button { margin-top: 16px; padding: 10px 20px; cursor: pointer; }
-        .error { color: #b00020; background: #fde8e8; padding: 10px; border-radius: 4px; margin-top: 12px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 24px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; font-size: 14px; }
-        th { background: #f2f2f2; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assignment Submission Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0f1b33;
+  --ink-soft: #52607a;
+  --paper: #f4f6fb;
+  --card: #ffffff;
+  --line: #e1e6f0;
+  --signal: #2f5bff;
+  --signal-deep: #1d3fd1;
+  --mint: #0fa97a;
+  --coral: #e5484d;
+  --radius: 18px;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "DM Sans", "Segoe UI", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--body);
+  color: var(--ink);
+  background: var(--paper);
+  min-height: 100vh;
+  line-height: 1.55;
+  overflow-x: hidden;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: linear-gradient(180deg, #e9eefc 0%, var(--paper) 420px);
+}
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: .55;
+  animation: drift 18s ease-in-out infinite alternate;
+}
+.blob.one { width: 420px; height: 420px; background: #9db4ff; top: -140px; left: -80px; }
+.blob.two { width: 360px; height: 360px; background: #b8f0dc; top: -100px; right: -60px; animation-delay: -6s; }
+@keyframes drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(60px, 40px) scale(1.12); }
+}
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 56px 24px 80px; }
+
+header { margin-bottom: 40px; max-width: 640px; animation: rise .7s cubic-bezier(.2,.8,.2,1) both; }
+header h1 {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+header p { margin-top: 14px; color: var(--ink-soft); font-size: 1.05rem; max-width: 52ch; }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.layout { display: grid; grid-template-columns: 400px 1fr; gap: 28px; align-items: start; }
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 2px rgba(15,27,51,.04), 0 12px 32px -12px rgba(15,27,51,.12);
+}
+
+.form-card {
+  padding: 30px;
+  position: sticky;
+  top: 24px;
+  animation: rise .7s .12s cubic-bezier(.2,.8,.2,1) both;
+  transition: box-shadow .35s ease, transform .35s ease;
+}
+.form-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 1px 2px rgba(15,27,51,.04), 0 24px 48px -16px rgba(47,91,255,.28);
+}
+.form-card h2 { font-family: var(--display); font-size: 1.35rem; letter-spacing: -0.01em; margin-bottom: 4px; }
+.form-card .sub { color: var(--ink-soft); font-size: .92rem; margin-bottom: 22px; }
+
+.alert {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: #fff1f1;
+  border: 1px solid #f7c9cb;
+  color: #a52a2e;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: .92rem;
+  font-weight: 500;
+  margin-bottom: 18px;
+  animation: shake .5s ease both;
+}
+.alert svg { flex: none; margin-top: 2px; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-7px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(3px); }
+}
+
+.field { position: relative; margin-bottom: 16px; }
+.field label {
+  display: block;
+  font-size: .85rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  transition: color .2s ease;
+}
+.field:focus-within label { color: var(--signal); }
+.field input {
+  width: 100%;
+  font: inherit;
+  color: var(--ink);
+  background: #f9fafd;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease, transform .2s ease;
+}
+.field input::placeholder { color: #9aa5ba; }
+.field input:hover { border-color: #c5cee0; }
+.field input:focus {
+  background: #fff;
+  border-color: var(--signal);
+  box-shadow: 0 0 0 4px rgba(47,91,255,.14);
+  transform: translateY(-1px);
+}
+
+.btn {
+  position: relative;
+  width: 100%;
+  margin-top: 8px;
+  padding: 14px 18px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #fff;
+  background: linear-gradient(135deg, var(--signal) 0%, var(--signal-deep) 100%);
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 10px 24px -8px rgba(47,91,255,.6);
+  transition: transform .2s ease, box-shadow .25s ease, filter .25s ease;
+}
+.btn::before {
+  content: "";
+  position: absolute;
+  top: 0; left: -80%;
+  width: 55%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.35), transparent);
+  transform: skewX(-20deg);
+  transition: left .6s ease;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 16px 30px -10px rgba(47,91,255,.7); filter: brightness(1.06); }
+.btn:hover::before { left: 130%; }
+.btn:active { transform: translateY(0) scale(.98); box-shadow: 0 6px 14px -6px rgba(47,91,255,.6); }
+.btn:focus-visible { outline: 3px solid rgba(47,91,255,.4); outline-offset: 3px; }
+.btn .spinner {
+  display: none;
+  width: 18px; height: 18px;
+  border: 2.5px solid rgba(255,255,255,.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  margin: 0 auto;
+  animation: spin .7s linear infinite;
+}
+.btn.loading .label { display: none; }
+.btn.loading .spinner { display: block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  animation: rise .7s .2s cubic-bezier(.2,.8,.2,1) both;
+}
+.list-head h2 { font-family: var(--display); font-size: 1.35rem; letter-spacing: -0.01em; }
+.count {
+  background: var(--ink);
+  color: #fff;
+  font-size: .85rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.items { list-style: none; display: grid; gap: 14px; }
+.item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  animation: rise .6s cubic-bezier(.2,.8,.2,1) both;
+  transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+}
+.item::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--signal), var(--mint));
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform .35s ease;
+}
+.item:hover {
+  transform: translateX(6px);
+  border-color: #cdd7f5;
+  box-shadow: 0 16px 32px -16px rgba(15,27,51,.25);
+}
+.item:hover::before { transform: scaleY(1); }
+
+.avatar {
+  flex: none;
+  width: 46px; height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--signal-deep);
+  background: #e6ecff;
+  transition: transform .3s ease, background .3s ease, color .3s ease;
+}
+.item:hover .avatar { transform: rotate(-6deg) scale(1.08); background: var(--signal); color: #fff; }
+
+.info { min-width: 0; flex: 1; }
+.info .title { font-weight: 600; font-size: 1.02rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.info .meta { color: var(--ink-soft); font-size: .88rem; }
+
+.open {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: .88rem;
+  font-weight: 600;
+  color: var(--signal-deep);
+  background: #eef2ff;
+  text-decoration: none;
+  transition: background .25s ease, color .25s ease, transform .25s ease;
+}
+.open svg { transition: transform .25s ease; }
+.open:hover { background: var(--signal); color: #fff; transform: translateY(-1px); }
+.open:hover svg { transform: translate(2px, -2px); }
+.open:focus-visible { outline: 3px solid rgba(47,91,255,.4); outline-offset: 2px; }
+
+.empty {
+  text-align: center;
+  padding: 56px 24px;
+  border: 1.5px dashed #c9d3ea;
+  border-radius: var(--radius);
+  color: var(--ink-soft);
+  animation: rise .7s .25s cubic-bezier(.2,.8,.2,1) both;
+}
+.empty svg { margin-bottom: 12px; animation: float 3s ease-in-out infinite; }
+.empty strong { display: block; color: var(--ink); font-family: var(--display); font-size: 1.15rem; margin-bottom: 4px; }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .form-card { position: static; }
+}
+@media (max-width: 520px) {
+  .item { flex-wrap: wrap; }
+  .open { margin-left: 62px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
 </head>
 <body>
-    <h1>Assignment Submission Portal</h1>
+<div class="backdrop" aria-hidden="true"><div class="blob one"></div><div class="blob two"></div></div>
 
-    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+<div class="wrap">
+  <header>
+    <h1>Assignment submission portal</h1>
+    <p>Fill in your details and paste the link to your work. Every submission appears in the list as soon as it is saved.</p>
+  </header>
 
-    <form method="POST" action="/">
-        <label for="name">Student Name</label>
-        <input type="text" id="name" name="name" required>
+  <div class="layout">
+    <section class="panel form-card">
+      <h2>Submit your assignment</h2>
+      <p class="sub">All four fields are required.</p>
 
-        <label for="reg_no">Registration Number</label>
-        <input type="text" id="reg_no" name="reg_no" required>
+      {% if error %}
+      <div class="alert" role="alert">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>{{ error }}</span>
+      </div>
+      {% endif %}
 
-        <label for="title">Assignment Title</label>
-        <input type="text" id="title" name="title" required>
+      <form method="POST" action="/" id="submit-form">
+        <div class="field">
+          <label for="name">Full name</label>
+          <input type="text" id="name" name="name" placeholder="Zain Ali Khan" value="{{ request.form.get('name', '') }}" required>
+        </div>
+        <div class="field">
+          <label for="reg_no">Registration number</label>
+          <input type="text" id="reg_no" name="reg_no" placeholder="SP23-BCS-015" value="{{ request.form.get('reg_no', '') }}" required>
+        </div>
+        <div class="field">
+          <label for="title">Assignment title</label>
+          <input type="text" id="title" name="title" placeholder="Lab Mid submission" value="{{ request.form.get('title', '') }}" required>
+        </div>
+        <div class="field">
+          <label for="url">Submission link</label>
+          <input type="text" id="url" name="url" inputmode="url" placeholder="https://github.com/username/repo" value="{{ request.form.get('url', '') }}" required>
+        </div>
+        <button type="submit" class="btn" id="submit-btn">
+          <span class="label">Submit assignment</span>
+          <span class="spinner"></span>
+        </button>
+      </form>
+    </section>
 
-        <label for="url">Submission URL</label>
-        <input type="text" id="url" name="url" placeholder="https://..." required>
+    <section>
+      <div class="list-head">
+        <h2>Submissions</h2>
+        <span class="count">{{ submissions|length }}</span>
+      </div>
 
-        <button type="submit">Submit Assignment</button>
-    </form>
-
-    <h2>Saved Submissions ({{ submissions|length }})</h2>
-    {% if submissions %}
-    <table>
-        <thead><tr><th>Name</th><th>Reg. No.</th><th>Title</th><th>URL</th></tr></thead>
-        <tbody>
+      {% if submissions %}
+      <ul class="items">
         {% for s in submissions %}
-            <tr>
-                <td>{{ s.name }}</td>
-                <td>{{ s.reg_no }}</td>
-                <td>{{ s.title }}</td>
-                <td><a href="{{ s.url }}" target="_blank">{{ s.url }}</a></td>
-            </tr>
+        <li class="item" style="animation-delay: {{ 0.25 + loop.index0 * 0.07 }}s">
+          <div class="avatar">{{ s.name[:1]|upper }}</div>
+          <div class="info">
+            <div class="title">{{ s.title }}</div>
+            <div class="meta">{{ s.name }} &middot; {{ s.reg_no }}</div>
+          </div>
+          <a class="open" href="{{ s.url }}" target="_blank" rel="noopener noreferrer">
+            Open
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
+          </a>
+        </li>
         {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-        <p>No submissions yet.</p>
-    {% endif %}
+      </ul>
+      {% else %}
+      <div class="empty">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#2f5bff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <strong>No submissions yet</strong>
+        Submit the first assignment using the form.
+      </div>
+      {% endif %}
+    </section>
+  </div>
+</div>
+
+<script>
+  var form = document.getElementById("submit-form");
+  var btn = document.getElementById("submit-btn");
+  form.addEventListener("submit", function () {
+    if (form.checkValidity()) { btn.classList.add("loading"); }
+  });
+</script>
 </body>
 </html>
