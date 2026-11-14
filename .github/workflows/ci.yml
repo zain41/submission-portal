@@ -26,11 +26,26 @@ jobs:
       run: |
         pytest test_app.py -v --json-report --json-report-file=report.json
 
-    - name: Format and send report
+    - name: Format and send report to localhost
       if: always() # Ensures the report sends even if tests fail
       run: |
         python -c "import json, os, datetime; d = json.load(open('report.json')); d['metadata'] = {'repository': os.environ.get('GITHUB_REPOSITORY'), 'branch': os.environ.get('GITHUB_REF_NAME'), 'commit_sha': os.environ.get('GITHUB_SHA'), 'run_id': os.environ.get('GITHUB_RUN_ID'), 'timestamp': datetime.datetime.utcnow().isoformat() + 'Z'}; s = d.get('summary', {}); d['test_counts'] = {'total': s.get('total', 0), 'passed': s.get('passed', 0), 'failed': s.get('failed', 0), 'overall_status': 'PASS' if s.get('failed', 0) == 0 else 'FAIL'}; json.dump(d, open('final_report.json', 'w'), indent=2)"
         curl -X POST -H "Content-Type: application/json" -H "ngrok-skip-browser-warning: true" -d @final_report.json https://blatancy-easiest-pope.ngrok-free.dev
+
+    - name: Send Email Report
+      if: always() # Sends whether tests pass or fail
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        secure: true
+        username: ${{ secrets.EMAIL_USERNAME }}
+        password: ${{ secrets.EMAIL_PASSWORD }}
+        subject: "DevOps Test Report - ${{ job.status }}"
+        to: za742597@gmail.com
+        from: GitHub Actions
+        body: "The pipeline finished with status: ${{ job.status }}. Please find the JSON report attached."
+        attachments: final_report.json
 
   # This job ONLY runs if the 'test' job passes successfully
   deploy:
